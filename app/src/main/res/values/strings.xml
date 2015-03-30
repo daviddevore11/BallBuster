@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Ball Buster</string>
+    <string name="time_remaining_format">%.1f seconds</string>
+    <string name="action_settings">Settings</string>
+</resources>
