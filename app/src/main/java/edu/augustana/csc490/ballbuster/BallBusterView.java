@@ -21,7 +21,6 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
     private BallBusterThread ballBusterThread; // controls the game loop
     private Activity activity; // to display Game Over dialog in GUI thread
     private boolean dialogIsDisplayed = false;
-    private SurfaceView surfaceView;
 
     private Paint backgroundPaint = new Paint();
     private Paint curtainPaint = new Paint();
@@ -29,16 +28,15 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
     private Paint colorIndicatorPaint = new Paint();
     private Paint textPaint = new Paint();
 
-    private int ballRadius;
-    private Point ballOne = new Point();
-    private Paint ballOnePaint = new Paint();
-    private Point ballTwo = new Point();
-    private Paint ballTwoPaint = new Paint();
-    private Point ballThree = new Point();
-    private Paint ballThreePaint = new Paint();
+    private Ball ballOne;
+    private Ball ballTwo;
+    private Ball ballThree;
 
+    private int ballSpeed;
     private int screenWidth;
     private int screenHeight;
+    private int upperBound;
+    private int lowerBound;
     private Random r = new Random();
 
     private int playerScore;
@@ -55,6 +53,9 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
         super.onSizeChanged(w, h, oldw, oldh);
         screenWidth = w;
         screenHeight = h;
+        ballSpeed = 5;
+        lowerBound = screenHeight - (screenHeight/5) + (screenWidth/10) + ballSpeed;
+        upperBound = screenHeight/4;
 
         // register SurfaceHolder.Callback listener
         getHolder().addCallback(this);
@@ -64,19 +65,17 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
         curtainPaint.setColor(Color.DKGRAY);
         colorIndicatorBackPaint.setColor(Color.DKGRAY);
         textPaint.setTextSize(w/ 20);
-        ballOnePaint = chooseRandomColor(ballOnePaint);
-        ballTwoPaint = chooseRandomColor(ballTwoPaint);
-        ballThreePaint = chooseRandomColor(ballThreePaint);
+        //ballOnePaint = chooseRandomColor(ballOnePaint);
+        //ballTwoPaint = chooseRandomColor(ballTwoPaint);
+        //ballThreePaint = chooseRandomColor(ballThreePaint);
         colorIndicatorPaint = chooseRandomColor(colorIndicatorPaint);
 
         // sets up ball parameters
-        ballRadius = screenWidth/10;
-        ballOne.x = (screenWidth/4) - ballRadius;
-        ballOne.y = (screenHeight - (screenHeight/5)) + ballRadius;
-        ballTwo.x = (screenWidth/2);
-        ballTwo.y = (screenHeight - (screenHeight/5)) + ballRadius;
-        ballThree.x = (screenWidth - (screenWidth/4)) + ballRadius;
-        ballThree.y = (screenHeight - (screenHeight/5)) + ballRadius;
+        // parameters for creating a ball are (ball's X, ball's Y, ball's Radius)
+        // All balls radius: screenWidth/10
+        ballOne = new Ball((screenWidth/4) - screenWidth/10, (screenHeight - (screenHeight/5)) + screenWidth/10, screenWidth/10);
+        ballTwo = new Ball(screenWidth/2,(screenHeight - (screenHeight/5)) + screenWidth/10, screenWidth/10);
+        ballThree = new Ball((screenWidth - (screenWidth/4)) + screenWidth/10, (screenHeight - (screenHeight/5)) + screenWidth/10, screenWidth/10);
 
         newGame(); // set up and start a new game
     }
@@ -90,27 +89,32 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
 
     public void updatePositions(double elapsedTimeMS){
         double interval = elapsedTimeMS / 1000.0;
-        int speed = 5;
 
         // moves ball up and down the screen
-        if(upwardMovement){
-            ballOne.y = ballOne.y - speed;
-            ballTwo.y = ballTwo.y - speed;
-            ballThree.y = ballThree.y - speed;
-        }else{
-            ballOne.y = ballOne.y + speed;
-            ballTwo.y = ballTwo.y + speed;
-            ballThree.y = ballThree.y + speed;
-        }
+        ballOne.moveBall(speed);
+        ballTwo.moveBall(speed);
+        ballThree.moveBall(speed);
 
-        /*if((ballOne.y <= (screenHeight/4)) || (ballTwo.y <= (screenHeight/4)) || (ballThree.y <= (screenHeight/4))){
-            upwardMovement = false;
-        }*/
-        if (ballOne.y <= (screenHeight/4)){
-            upwardMovement = false;
-        }else if(ballOne.y >= (screenHeight - (screenHeight/5))+ballRadius+speed){
-            upwardMovement = true;
-            ballOnePaint = chooseRandomColor(ballOnePaint);
+        // check for BallOne
+        if (ballOne.getY() <= upperBound){
+            ballOne.switchDirection();
+        }else if(ballOne.getY() >= lowerBound){
+            ballOne.switchDirection();
+            ballOne.randomizePaint();
+        }
+        // check for ballTwo
+        if (ballTwo.getY() <= upperBound){
+            ballOne.switchDirection();
+        }else if(ballTwo.getY() >= lowerBound){
+            ballTwo.switchDirection();
+            ballTwo.randomizePaint();
+        }
+        // check for ballThree
+        if (ballThree.getY() <= upperBound){
+            ballThree.switchDirection();
+        }else if(ballThree.getY() >= lowerBound){
+            ballThree.switchDirection();
+            ballThree.randomizePaint();
         }
 
         // updates text on screen with timeLeft
@@ -120,7 +124,6 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
     // picks a random color for the desired Paint Object
     public Paint chooseRandomColor(Paint paint){
         int randNum = r.nextInt(3-0)+0;
-
         if(randNum == 1){
              paint.setColor(Color.RED);
         }else if(randNum == 2){
@@ -148,33 +151,33 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
         canvas.drawRect((screenWidth/2)-40, (screenHeight/7)-10, ((screenWidth/2)+40), (screenHeight/20)+10, colorIndicatorPaint);
 
         // draws circles
-        canvas.drawCircle(ballOne.x, ballOne.y, ballRadius, ballOnePaint);
-        canvas.drawCircle(ballTwo.x, ballTwo.y, ballRadius, ballTwoPaint);
-        canvas.drawCircle(ballThree.x, ballThree.y, ballRadius, ballThreePaint);
+        canvas.drawCircle(ballOne.getX(), ballOne.getY(), ballOne.getRadius(), ballOne.getBallPaint());
+        canvas.drawCircle(ballTwo.getX(), ballTwo.getY(), ballTwo.getRadius(), ballTwo.getBallPaint());
+        canvas.drawCircle(ballThree.getX(), ballThree.getY(), ballThree.getRadius(), ballThree.getBallPaint());
 
         // draws main curtain
         canvas.drawRect(0, screenHeight - (screenHeight/5), screenWidth, screenHeight, curtainPaint);
     }
 
     public void checkBallTap(MotionEvent e){
-        if(((ballOne.x - ballRadius) < e.getX() && e.getX() < (ballOne.x + ballRadius)) && ((ballOne.y - ballRadius) < e.getY() && e.getY() < (ballOne.y + ballRadius))){
-            if (ballOnePaint.getColor() == colorIndicatorPaint.getColor()){
+        if(((ballOne.getX() - ballOne.getRadius()) < e.getX() && e.getX() < (ballOne.getX() + ballOne.getRadius())) && ((ballOne.getY() - ballOne.getRadius()) < e.getY() && e.getY() < (ballOne.getY() + ballOne.getRadius()))){
+            if (ballOne.getBallPaint().getColor() == colorIndicatorPaint.getColor()){
                 playerScore += 1;
                 resetBalls(1);
             }else {
                 playerScore -= 1;
                 resetBalls(1);
             }
-        }else if(((ballTwo.x - ballRadius) < e.getX() && e.getX() < (ballTwo.x + ballRadius)) && ((ballTwo.y - ballRadius) < e.getY() && e.getY() < (ballTwo.y + ballRadius))){
-            if (ballTwoPaint.getColor() == colorIndicatorPaint.getColor()){
+        }else if(((ballTwo.getX() - ballTwo.getRadius()) < e.getX() && e.getX() < (ballTwo.getX() + ballTwo.getRadius())) && ((ballTwo.getY() - ballTwo.getRadius()) < e.getY() && e.getY() < (ballTwo.getY() + ballTwo.getRadius()))){
+            if (ballTwo.getBallPaint().getColor() == colorIndicatorPaint.getColor()){
                 playerScore += 1;
                 resetBalls(2);
             }else {
                 playerScore -= 1;
                 resetBalls(2);
             }
-        }else if(((ballThree.x - ballRadius) < e.getX() && e.getX() < (ballThree.x + ballRadius)) && ((ballThree.y - ballRadius) < e.getY() && e.getY() < (ballThree.y + ballRadius))){
-            if (ballThreePaint.getColor() == colorIndicatorPaint.getColor()){
+        }else if(((ballThree.getX() - ballThree.getRadius()) < e.getX() && e.getX() < (ballThree.getX() + ballThree.getRadius())) && ((ballThree.getY() - ballThree.getRadius()) < e.getY() && e.getY() < (ballThree.getY() + ballThree.getRadius()))){
+            if (ballThree.getBallPaint().getColor() == colorIndicatorPaint.getColor()){
                 playerScore += 1;
                 resetBalls(3);
             }else {
@@ -187,17 +190,14 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
     public void resetBalls(int ballNum){
         ballBusterThread.setRunning(false);
         if(ballNum == 1){
-            ballOnePaint = chooseRandomColor(ballOnePaint);
-            ballOne.x = (screenWidth/4) - ballRadius;
-            ballOne.y = (screenHeight - (screenHeight/5)) + ballRadius;
+            ballOne.randomizePaint();
+            ballOne.setY((screenHeight - (screenHeight/5)) + ballOne.getRadius());
         }else if(ballNum == 2){
-            ballTwoPaint = chooseRandomColor(ballTwoPaint);
-            ballTwo.x = (screenWidth/2);
-            ballTwo.y = (screenHeight - (screenHeight/5)) + ballRadius;
+            ballTwo.randomizePaint();
+            ballTwo.setY((screenHeight - (screenHeight/5)) + ballOne.getRadius());
         }else if(ballNum == 3){
-            ballThreePaint = chooseRandomColor(ballThreePaint);
-            ballThree.x = (screenWidth - (screenWidth/4)) + ballRadius;
-            ballThree.y = (screenHeight - (screenHeight/5)) + ballRadius;
+            ballThree.randomizePaint();
+            ballThree.setY((screenHeight - (screenHeight/5)) + ballOne.getRadius());
         }
         ballBusterThread.setRunning(true);
     }
