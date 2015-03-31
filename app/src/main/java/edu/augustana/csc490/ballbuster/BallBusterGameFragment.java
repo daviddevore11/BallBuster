@@ -6,9 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-/**
- * Created by Owner on 3/22/2015.
- */
 public class BallBusterGameFragment extends Fragment {
     private BallBusterView ballBusterView;
 
@@ -26,6 +23,7 @@ public class BallBusterGameFragment extends Fragment {
     @Override
     public void onPause(){
         super.onPause();
+        ballBusterView.stopGame();
     }
 
     @Override

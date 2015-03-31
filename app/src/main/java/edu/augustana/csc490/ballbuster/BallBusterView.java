@@ -1,12 +1,17 @@
 package edu.augustana.csc490.ballbuster;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -22,30 +27,37 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
     private Activity activity; // to display Game Over dialog in GUI thread
     private boolean dialogIsDisplayed = false;
 
-    private Paint backgroundPaint = new Paint();
-    private Paint curtainPaint = new Paint();
-    private Paint colorIndicatorBackPaint = new Paint();
-    private Paint colorIndicatorPaint = new Paint();
-    private Paint textPaint = new Paint();
+    private Paint backgroundPaint;
+    private Paint curtainPaint;
+    private Paint colorIndicatorBackPaint;
+    private Paint colorIndicatorPaint;
+    private Paint textPaint;
 
     private Ball ballOne;
     private Ball ballTwo;
     private Ball ballThree;
+    private int startingY;
+    private double startingSpeed;
 
-    private int ballSpeed;
     private int screenWidth;
     private int screenHeight;
-    private int upperBound;
-    private int lowerBound;
     private Random r = new Random();
 
     private int playerScore;
     private double timeLeft;
-    private boolean upwardMovement;
+    private boolean gameOver;
 
     public BallBusterView(Context context, AttributeSet attrs){
         super(context, attrs);
         activity = (Activity) context; // store reference to MainActivity
+
+        getHolder().addCallback(this);
+
+        backgroundPaint = new Paint();
+        curtainPaint = new Paint();
+        colorIndicatorBackPaint = new Paint();
+        colorIndicatorPaint = new Paint();
+        textPaint = new Paint();
     }
 
     @Override
@@ -53,72 +65,85 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
         super.onSizeChanged(w, h, oldw, oldh);
         screenWidth = w;
         screenHeight = h;
-        ballSpeed = 5;
-        lowerBound = screenHeight - (screenHeight/5) + (screenWidth/10) + ballSpeed;
-        upperBound = screenHeight/4;
-
-        // register SurfaceHolder.Callback listener
-        getHolder().addCallback(this);
+        startingY = (screenHeight - (screenHeight/5)) + screenWidth/10;
+        startingSpeed = 20.0;
+        int lowerBound = screenHeight - (screenHeight/5) + (screenWidth/10) + (int)startingSpeed;
+        int upperBound = screenHeight/4;
 
         // construct Paints for drawings
         backgroundPaint.setColor(Color.LTGRAY);
         curtainPaint.setColor(Color.DKGRAY);
         colorIndicatorBackPaint.setColor(Color.DKGRAY);
         textPaint.setTextSize(w/ 20);
-        //ballOnePaint = chooseRandomColor(ballOnePaint);
-        //ballTwoPaint = chooseRandomColor(ballTwoPaint);
-        //ballThreePaint = chooseRandomColor(ballThreePaint);
         colorIndicatorPaint = chooseRandomColor(colorIndicatorPaint);
 
         // sets up ball parameters
-        // parameters for creating a ball are (ball's X, ball's Y, ball's Radius)
+        // parameters for creating a ball are (X, Y, radius, speed, upper bound, lower bound)
         // All balls radius: screenWidth/10
-        ballOne = new Ball((screenWidth/4) - screenWidth/10, (screenHeight - (screenHeight/5)) + screenWidth/10, screenWidth/10);
-        ballTwo = new Ball(screenWidth/2,(screenHeight - (screenHeight/5)) + screenWidth/10, screenWidth/10);
-        ballThree = new Ball((screenWidth - (screenWidth/4)) + screenWidth/10, (screenHeight - (screenHeight/5)) + screenWidth/10, screenWidth/10);
+        ballOne = new Ball((screenWidth/4) - screenWidth/10, startingY, screenWidth/10, startingSpeed, upperBound, lowerBound);
+        ballTwo = new Ball(screenWidth/2, startingY, screenWidth/10, startingSpeed, upperBound, lowerBound);
+        ballThree = new Ball((screenWidth - (screenWidth/4)) + screenWidth/10, startingY, screenWidth/10, startingSpeed, upperBound, lowerBound);
 
-        newGame(); // set up and start a new game
+        showStartUpDialog(R.string.welcome);
+        //newGame(); // set up and start a new game
     }
 
     // reset all the screen elements and start a new game
     public void newGame(){
         timeLeft = 60; // start the countdown at 60 seconds
         playerScore = 0; // sets player score
-        upwardMovement = true;
+
+        if(gameOver){
+            gameOver = false;
+
+            //reset ball parameters to starting positions
+            //re-randomize the paint for every object (balls and color indicator)
+            ballOne.setY(startingY);
+            ballTwo.setY(startingY);
+            ballThree.setY(startingY);
+            ballOne.resetSpeed(startingSpeed);
+            ballTwo.resetSpeed(startingSpeed);
+            ballThree.resetSpeed(startingSpeed);
+            ballOne.resetIncrementTracker();
+            ballTwo.resetIncrementTracker();
+            ballThree.resetIncrementTracker();
+            colorIndicatorPaint = chooseRandomColor(colorIndicatorPaint);
+            ballOne.randomizePaint();
+            ballTwo.randomizePaint();
+            ballThree.randomizePaint();
+
+            ballBusterThread = new BallBusterThread(getHolder());
+            ballBusterThread.setRunning(true);
+            ballBusterThread.start();
+        }
     }
 
     public void updatePositions(double elapsedTimeMS){
         double interval = elapsedTimeMS / 1000.0;
 
         // moves ball up and down the screen
-        ballOne.moveBall(speed);
-        ballTwo.moveBall(speed);
-        ballThree.moveBall(speed);
+        ballOne.moveBall();
+        ballTwo.moveBall();
+        ballThree.moveBall();
 
-        // check for BallOne
-        if (ballOne.getY() <= upperBound){
-            ballOne.switchDirection();
-        }else if(ballOne.getY() >= lowerBound){
-            ballOne.switchDirection();
-            ballOne.randomizePaint();
-        }
-        // check for ballTwo
-        if (ballTwo.getY() <= upperBound){
-            ballOne.switchDirection();
-        }else if(ballTwo.getY() >= lowerBound){
-            ballTwo.switchDirection();
-            ballTwo.randomizePaint();
-        }
-        // check for ballThree
-        if (ballThree.getY() <= upperBound){
-            ballThree.switchDirection();
-        }else if(ballThree.getY() >= lowerBound){
-            ballThree.switchDirection();
-            ballThree.randomizePaint();
+        ballOne.increaseSpeed(interval);
+        ballTwo.increaseSpeed(interval);
+        ballThree.increaseSpeed(interval);
+
+        int randNum = r.nextInt(60-0);
+        if(randNum == 10){
+            colorIndicatorPaint = chooseRandomColor(colorIndicatorPaint);
         }
 
         // updates text on screen with timeLeft
         timeLeft = 60 - interval;
+
+        if(timeLeft <= 0.0){
+            timeLeft = 0.0;
+            gameOver = true; // the game is over
+            ballBusterThread.setRunning(false);
+            showGameOverDialog(R.string.over);
+        }
     }
 
     // picks a random color for the desired Paint Object
@@ -202,6 +227,76 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
         ballBusterThread.setRunning(true);
     }
 
+    public void showStartUpDialog(final int messageId){
+        final DialogFragment gameStart = new DialogFragment(){
+            @Override
+            public Dialog onCreateDialog(Bundle bundle){
+                // create dialog displaying String resource for messageId
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle(getResources().getString(messageId));
+
+                // display game description
+                builder.setMessage(getResources().getString(R.string.welcome_info));
+                builder.setPositiveButton(R.string.start_game, new DialogInterface.OnClickListener(){
+                    @Override
+                    public void onClick(DialogInterface dialog, int which){
+                        ballBusterThread.setRunning(true); // start game running
+                        ballBusterThread.start();
+                        newGame();
+                    }
+                });
+
+                return builder.create();
+            }
+        };
+
+        // in GUI thread, use FragmentManager to dispaly the DialogFragment
+        activity.runOnUiThread(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        gameStart.setCancelable(false); // modal dialog
+                        gameStart.show(activity.getFragmentManager(), "start");
+                    }
+                }
+        );
+    }
+
+    public void showGameOverDialog(final int messageId){
+        final DialogFragment gameResult = new DialogFragment(){
+            @Override
+            public Dialog onCreateDialog(Bundle bundle){
+                // create dialog displaying String resource for messageId
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle(getResources().getString(messageId));
+
+                // display total number of bulls busted
+                builder.setMessage(getResources().getString(R.string.results_format, playerScore));
+                builder.setPositiveButton(R.string.reset_game, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialogIsDisplayed = false;
+                        newGame();
+                    }
+                });
+
+                return builder.create(); // return the AlertDialog
+            }
+        };
+
+        // in GUI thread, use FragmentManager to dispaly the DialogFragment
+        activity.runOnUiThread(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        dialogIsDisplayed = true;
+                        gameResult.setCancelable(false); // modal dialog
+                        gameResult.show(activity.getFragmentManager(), "results");
+                    }
+                }
+        );
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent e){
         // get int representing the type of action which caused this event
@@ -217,8 +312,8 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
     public void surfaceCreated(SurfaceHolder holder) {
         if (!dialogIsDisplayed){
             ballBusterThread = new BallBusterThread(holder);
-            ballBusterThread.setRunning(true); // start game running
-            ballBusterThread.start();
+            //ballBusterThread.setRunning(true); // start game running
+            //ballBusterThread.start();
         }
     }
 
@@ -245,6 +340,12 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
 
     public void releaseResources(){
 
+    }
+
+    public void stopGame(){
+        if (ballBusterThread != null){
+            ballBusterThread.setRunning(false); // tell thread to terminate
+        }
     }
 
     public class BallBusterThread extends Thread {
@@ -279,7 +380,6 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
                         double elapsedTimeMS = currentTime - previousFrameTime;
                         updatePositions(elapsedTimeMS);
                         drawGameBackground(canvas);
-
                     }
                 }finally{
                     if(canvas!=null){
