@@ -3,7 +3,6 @@ package edu.augustana.csc490.ballbuster;
 
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.util.Log;
 
 import java.util.Random;
 

@@ -1,7 +1,6 @@
 package edu.augustana.csc490.ballbuster;
 
 import android.app.Activity;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;

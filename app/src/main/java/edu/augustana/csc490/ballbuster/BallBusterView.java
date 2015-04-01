@@ -9,8 +9,6 @@ import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Point;
-import android.graphics.Rect;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.SoundPool;
@@ -19,11 +17,27 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.MotionEvent;
-import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
 import java.util.Random;
+
+/* SOUNDS USED
+    blop.wav
+    http://soundbible.com/2067-Blop.html
+    Created By: Mark Diangelo
+
+    buzz.wav
+    http://soundbible.com/1204-Buzz.html
+    Created By:  Mike Koenig
+
+    sweep.wav
+    http://www.downloadfreesound.com/8-bit-sound-effects/
+    Original Name: Sweep5 no author listed
+
+    background.wav
+    http://www.playonloop.com/2014-music-loops/flash-run/
+    Original Name: Flash Run Pulled From: Creative Commons
+ */
 
 public class BallBusterView extends SurfaceView implements SurfaceHolder.Callback{
 
