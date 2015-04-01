@@ -64,7 +64,7 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
 
         getHolder().addCallback(this);
 
-        
+
         player = MediaPlayer.create(context, R.raw.background);
         player.setLooping(true);
         soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
