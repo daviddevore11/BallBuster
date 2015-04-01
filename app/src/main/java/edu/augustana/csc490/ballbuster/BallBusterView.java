@@ -54,8 +54,9 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
     private MediaPlayer player; // plays background music
     private SoundPool soundPool; // plays sound effects
     private SparseIntArray soundMap; // maps IDs to SoundPool
-    private static final int BALL_POP_ID = 0;
-    private static final int BACKGROUND_MUSIC_ID = 1;
+    private static final int BALL_GOOD_POP_ID = 0;
+    private static final int BALL_BAD_POP_ID = 1;
+    private static final int COLOR_SWITCH_ID = 2;
 
     public BallBusterView(Context context, AttributeSet attrs){
         super(context, attrs);
@@ -66,9 +67,10 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
         player = MediaPlayer.create(context, R.raw.background);
         player.setLooping(true);
         soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
-        soundMap = new SparseIntArray(2);
-        soundMap.put(BALL_POP_ID, soundPool.load(context, R.raw.blop, 1));
-        soundMap.put(BACKGROUND_MUSIC_ID, soundPool.load(context, R.raw.background, 1));
+        soundMap = new SparseIntArray(3);
+        soundMap.put(BALL_GOOD_POP_ID, soundPool.load(context, R.raw.blop, 1));
+        soundMap.put(BALL_BAD_POP_ID, soundPool.load(context, R.raw.buzz,1));
+        soundMap.put(COLOR_SWITCH_ID, soundPool.load(context, R.raw.sweep,1));
 
         backgroundPaint = new Paint();
         curtainPaint = new Paint();
@@ -146,9 +148,13 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
         ballTwo.increaseSpeed(interval);
         ballThree.increaseSpeed(interval);
 
-        int randNum = r.nextInt(80-0);
+        int randNum = r.nextInt(100-0);
         if(randNum == 10){
+            int temp = colorIndicatorPaint.getColor();
             colorIndicatorPaint = chooseRandomColor(colorIndicatorPaint);
+            if(temp != colorIndicatorPaint.getColor()){
+                soundPool.play(soundMap.get(COLOR_SWITCH_ID), 1, 1, 1, 0, 1f);
+            }
         }
 
         // updates text on screen with timeLeft
@@ -207,27 +213,30 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
             if (ballOne.getBallPaint().getColor() == colorIndicatorPaint.getColor()){
                 playerScore += 1;
                 resetBalls(1);
-                soundPool.play(soundMap.get(BALL_POP_ID), 1, 1, 1, 0, 1f);
+                soundPool.play(soundMap.get(BALL_GOOD_POP_ID), 1, 1, 1, 0, 1f);
             }else {
                 playerScore -= 1;
+                soundPool.play(soundMap.get(BALL_BAD_POP_ID), 1, 1, 1, 0, 1f);
                 resetBalls(1);
             }
         }else if(((ballTwo.getX() - ballTwo.getRadius()) < e.getX() && e.getX() < (ballTwo.getX() + ballTwo.getRadius())) && ((ballTwo.getY() - ballTwo.getRadius()) < e.getY() && e.getY() < (ballTwo.getY() + ballTwo.getRadius()))){
             if (ballTwo.getBallPaint().getColor() == colorIndicatorPaint.getColor()){
                 playerScore += 1;
                 resetBalls(2);
-                soundPool.play(soundMap.get(BALL_POP_ID), 1, 1, 1, 0, 1f);
+                soundPool.play(soundMap.get(BALL_GOOD_POP_ID), 1, 1, 1, 0, 1f);
             }else {
                 playerScore -= 1;
+                soundPool.play(soundMap.get(BALL_BAD_POP_ID), 1, 1, 1, 0, 1f);
                 resetBalls(2);
             }
         }else if(((ballThree.getX() - ballThree.getRadius()) < e.getX() && e.getX() < (ballThree.getX() + ballThree.getRadius())) && ((ballThree.getY() - ballThree.getRadius()) < e.getY() && e.getY() < (ballThree.getY() + ballThree.getRadius()))){
             if (ballThree.getBallPaint().getColor() == colorIndicatorPaint.getColor()){
                 playerScore += 1;
                 resetBalls(3);
-                soundPool.play(soundMap.get(BALL_POP_ID), 1, 1, 1, 0, 1f);
+                soundPool.play(soundMap.get(BALL_GOOD_POP_ID), 1, 1, 1, 0, 1f);
             }else {
                 playerScore -= 1;
+                soundPool.play(soundMap.get(BALL_BAD_POP_ID), 1, 1, 1, 0, 1f);
                 resetBalls(3);
             }
         }
