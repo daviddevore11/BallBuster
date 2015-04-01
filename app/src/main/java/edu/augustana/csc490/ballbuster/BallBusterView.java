@@ -166,7 +166,7 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
 
     // picks a random color for the desired Paint Object
     public Paint chooseRandomColor(Paint paint){
-        int randNum = r.nextInt(3-0)+0;
+        int randNum = r.nextInt(3);
         if(randNum == 1){
              paint.setColor(Color.RED);
         }else if(randNum == 2){

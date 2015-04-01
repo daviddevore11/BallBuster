@@ -32,7 +32,6 @@ public class Ball {
         previousIncrement = 10;
         height = r.nextInt((lowerBound-(ballRadius*5))-upperBound)+upperBound;
         this.randomizePaint();
-        Log.d("SPEED", "Starting Speed: " + ballVelocity);
     }
 
     public int getRadius(){
@@ -71,14 +70,16 @@ public class Ball {
     }
 
     public void randomizePaint(){
-        int randNum = r.nextInt(3-0);
+        int randNum = r.nextInt(3);
 
-        if(randNum == 1){
+        if(randNum == 0 && (ballPaint.getColor() != Color.RED)){
             ballPaint.setColor(Color.RED);
-        }else if(randNum == 2){
+        }else if(randNum == 1 && (ballPaint.getColor() != Color.BLUE)){
             ballPaint.setColor(Color.BLUE);
-        }else{
+        }else if(randNum == 2 && (ballPaint.getColor() != Color.MAGENTA)){
             ballPaint.setColor(Color.MAGENTA);
+        }else{
+            this.randomizePaint();
         }
     }
 
@@ -97,11 +98,8 @@ public class Ball {
     public void increaseSpeed(double increment){
         if(increment >= 10){
             double tempIncrement = (increment-previousIncrement);
-            Log.d("SPEED", "" + tempIncrement);
-            Log.d("SPEED", "" + ballVelocity);
             ballVelocity += tempIncrement;
             previousIncrement = increment;
-            Log.d("SPEED", "" + ballVelocity);
         }
     }
 }
