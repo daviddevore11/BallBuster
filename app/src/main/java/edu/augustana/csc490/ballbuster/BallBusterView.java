@@ -22,10 +22,6 @@ import android.view.SurfaceView;
 import java.util.Random;
 
 /* SOUNDS USED
-    blop.wav
-    http://soundbible.com/2067-Blop.html
-    Created By: Mark Diangelo
-
     beep.wav
     http://www.downloadfreesound.com/8-bit-sound-effects/
     Orginial Name: Beep8 no author listed
@@ -81,7 +77,6 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
     private static final int BALL_GOOD_POP_ID = 0;
     private static final int BALL_BAD_POP_ID = 1;
     private static final int COLOR_SWITCH_ID = 2;
-    private static final int GAME_OVER_ID = 3;
 
     public BallBusterView(Context context, AttributeSet attrs){
         super(context, attrs);
@@ -199,7 +194,6 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
             gameOver = true; // the game is over
             ballBusterThread.setRunning(false);
             backgroundPlayer.stop();
-            //backgroundPlayer.release();
             showGameOverDialog(R.string.over);
         }
     }
@@ -405,6 +399,7 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
     public void releaseResources(){
         backgroundPlayer.release();
         alertPlayer.release();
+        gameOverPlayer.release();
         soundPool.release();
     }
 
