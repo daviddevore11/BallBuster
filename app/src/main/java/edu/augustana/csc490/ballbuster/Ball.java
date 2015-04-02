@@ -3,6 +3,7 @@ package edu.augustana.csc490.ballbuster;
 
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.Log;
 
 import java.util.Random;
 
@@ -28,7 +29,7 @@ public class Ball {
         ballVelocity = velocity;
         upperBound = upper;
         lowerBound = lower;
-        previousIncrement = 10;
+        previousIncrement = 0;
         height = r.nextInt((lowerBound-(ballRadius*5))-upperBound)+upperBound;
         this.randomizePaint();
     }
@@ -56,7 +57,7 @@ public class Ball {
         }else if(ballY >= lowerBound){
             upwardMovement = true;
             this.randomizePaint();
-            height = r.nextInt((lowerBound-(ballRadius*5))-upperBound)+upperBound;
+            height = r.nextInt((lowerBound-(ballRadius*6))-upperBound)+upperBound;
         }
     }
 
@@ -95,10 +96,9 @@ public class Ball {
     }
 
     public void increaseSpeed(double increment){
-        if(increment >= 10){
-            double tempIncrement = (increment-previousIncrement);
-            ballVelocity += tempIncrement;
-            previousIncrement = increment;
-        }
+        double tempIncrement = (increment-previousIncrement);
+        tempIncrement = tempIncrement/6;
+        ballVelocity += tempIncrement;
+        previousIncrement = increment;
     }
 }

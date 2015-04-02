@@ -26,6 +26,10 @@ import java.util.Random;
     http://soundbible.com/2067-Blop.html
     Created By: Mark Diangelo
 
+    beep.wav
+    http://www.downloadfreesound.com/8-bit-sound-effects/
+    Orginial Name: Beep8 no author listed
+
     buzz.wav
     http://soundbible.com/1204-Buzz.html
     Created By:  Mike Koenig
@@ -37,6 +41,10 @@ import java.util.Random;
     background.wav
     http://www.playonloop.com/2014-music-loops/flash-run/
     Original Name: Flash Run Pulled From: Creative Commons
+
+    siren.wav
+    http://soundbible.com/1577-Siren-Noise.html
+    Original Name: Siren Noise Sound Created By: KevanGC
  */
 
 public class BallBusterView extends SurfaceView implements SurfaceHolder.Callback{
@@ -65,12 +73,15 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
     private double timeLeft;
     private boolean gameOver;
 
-    private MediaPlayer player; // plays background music
+    private MediaPlayer backgroundPlayer; // plays background music
+    private MediaPlayer alertPlayer; // plays alert sound near end
+    private MediaPlayer gameOverPlayer; // plays game over sound
     private SoundPool soundPool; // plays sound effects
     private SparseIntArray soundMap; // maps IDs to SoundPool
     private static final int BALL_GOOD_POP_ID = 0;
     private static final int BALL_BAD_POP_ID = 1;
     private static final int COLOR_SWITCH_ID = 2;
+    private static final int GAME_OVER_ID = 3;
 
     public BallBusterView(Context context, AttributeSet attrs){
         super(context, attrs);
@@ -78,12 +89,13 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
 
         getHolder().addCallback(this);
 
-
-        player = MediaPlayer.create(context, R.raw.background);
-        player.setLooping(true);
+        backgroundPlayer = MediaPlayer.create(context, R.raw.background);
+        backgroundPlayer.setLooping(true);
+        alertPlayer = MediaPlayer.create(context, R.raw.siren);
+        gameOverPlayer = MediaPlayer.create(context, R.raw.end);
         soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
-        soundMap = new SparseIntArray(3);
-        soundMap.put(BALL_GOOD_POP_ID, soundPool.load(context, R.raw.blop, 1));
+        soundMap = new SparseIntArray(4);
+        soundMap.put(BALL_GOOD_POP_ID, soundPool.load(context, R.raw.beep, 1));
         soundMap.put(BALL_BAD_POP_ID, soundPool.load(context, R.raw.buzz,1));
         soundMap.put(COLOR_SWITCH_ID, soundPool.load(context, R.raw.sweep,1));
 
@@ -100,7 +112,7 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
         screenWidth = w;
         screenHeight = h;
         startingY = (screenHeight - (screenHeight/5)) + screenWidth/10;
-        startingSpeed = 20.0;
+        startingSpeed = 4.0;
         int lowerBound = screenHeight - (screenHeight/5) + (screenWidth/10) + (int)startingSpeed;
         int upperBound = screenHeight/4;
 
@@ -145,6 +157,8 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
             ballTwo.randomizePaint();
             ballThree.randomizePaint();
 
+            textPaint.setColor(Color.BLACK);
+
             ballBusterThread = new BallBusterThread(getHolder());
             ballBusterThread.setRunning(true);
             ballBusterThread.start();
@@ -163,7 +177,7 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
         ballTwo.increaseSpeed(interval);
         ballThree.increaseSpeed(interval);
 
-        int randNum = r.nextInt(100-0);
+        int randNum = r.nextInt(500);
         if(randNum == 10){
             int temp = colorIndicatorPaint.getColor();
             colorIndicatorPaint = chooseRandomColor(colorIndicatorPaint);
@@ -175,12 +189,17 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
         // updates text on screen with timeLeft
         timeLeft = 60 - interval;
 
+        if(!alertPlayer.isPlaying() && timeLeft <= 5.0){
+            textPaint.setColor(Color.RED);
+            alertPlayer.start();
+        }
         if(timeLeft <= 0.0){
             timeLeft = 0.0;
+            gameOverPlayer.start();
             gameOver = true; // the game is over
             ballBusterThread.setRunning(false);
-            player.stop();
-            player.release();
+            backgroundPlayer.stop();
+            //backgroundPlayer.release();
             showGameOverDialog(R.string.over);
         }
     }
@@ -287,7 +306,7 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
                     public void onClick(DialogInterface dialog, int which){
                         ballBusterThread.setRunning(true); // start game running
                         ballBusterThread.start();
-                        player.start();
+                        backgroundPlayer.start();
                         newGame();
                     }
                 });
@@ -322,9 +341,9 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialogIsDisplayed = false;
-                        player = MediaPlayer.create(BallBusterView.this.getContext(), R.raw.background);
-                        player.setLooping(true);
-                        player.start();
+                        backgroundPlayer = MediaPlayer.create(BallBusterView.this.getContext(), R.raw.background);
+                        backgroundPlayer.setLooping(true);
+                        backgroundPlayer.start();
                         newGame();
                     }
                 });
@@ -384,7 +403,8 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
     }
 
     public void releaseResources(){
-        player.release();
+        backgroundPlayer.release();
+        alertPlayer.release();
         soundPool.release();
     }
 
