@@ -128,8 +128,6 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
         ballOne = new Ball((screenWidth/4) - screenWidth/10, startingY, screenWidth/10, startingSpeed, upperBound, lowerBound);
         ballTwo = new Ball(screenWidth/2, startingY, screenWidth/10, startingSpeed, upperBound, lowerBound);
         ballThree = new Ball((screenWidth - (screenWidth/4)) + screenWidth/10, startingY, screenWidth/10, startingSpeed, upperBound, lowerBound);
-
-        showStartUpDialog(R.string.welcome);
     }
 
     // reset all the screen elements and start a new game
@@ -289,42 +287,6 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
         ballBusterThread.setRunning(true);
     }
 
-    public void showStartUpDialog(final int messageId){
-        final DialogFragment gameStart = new DialogFragment(){
-            @Override
-            public Dialog onCreateDialog(Bundle bundle){
-                // create dialog displaying String resource for messageId
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle(getResources().getString(messageId));
-
-                // display game description
-                builder.setMessage(getResources().getString(R.string.welcome_info));
-                builder.setPositiveButton(R.string.start_game, new DialogInterface.OnClickListener(){
-                    @Override
-                    public void onClick(DialogInterface dialog, int which){
-                        ballBusterThread.setRunning(true); // start game running
-                        ballBusterThread.start();
-                        backgroundPlayer.start();
-                        newGame();
-                    }
-                });
-
-                return builder.create();
-            }
-        };
-
-        // in GUI thread, use FragmentManager to dispaly the DialogFragment
-        activity.runOnUiThread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        gameStart.setCancelable(false); // modal dialog
-                        gameStart.show(activity.getFragmentManager(), "start");
-                    }
-                }
-        );
-    }
-
     public void showGameOverDialog(final int messageId){
         final DialogFragment gameResult = new DialogFragment(){
             @Override
@@ -378,6 +340,10 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
     public void surfaceCreated(SurfaceHolder holder) {
         if (!dialogIsDisplayed){
             ballBusterThread = new BallBusterThread(holder);
+            ballBusterThread.setRunning(true); // start game running
+            ballBusterThread.start();
+            backgroundPlayer.start();
+            newGame();
         }
     }
 
