@@ -51,24 +51,31 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
 
     private BallBusterThread ballBusterThread; // controls the game loop
     private Activity activity; // to display Game Over dialog in GUI thread
-    private boolean dialogIsDisplayed = false;
+    private boolean dialogIsDisplayed = false; // used to make sure game does not advanced if
+                                               // there is dialog up
 
+    // Paints used to create the background game elements
     private Paint backgroundPaint;
     private Paint curtainPaint;
     private Paint colorIndicatorBackPaint;
     private Paint colorIndicatorPaint;
     private Paint textPaint;
 
+    // Creates the three ball objects
     private Ball ballOne;
     private Ball ballTwo;
     private Ball ballThree;
+    // Start variables used when creating the ball objects
     private int startingY;
     private double startingSpeed;
 
+    // Screen properties used in creating ball objects
     private int screenWidth;
     private int screenHeight;
-    private Random r = new Random();
 
+    private Random r = new Random(); // random object used to randomize color
+
+    // variables used to control game mechanics
     private int playerScore;
     private double timeLeft;
     private boolean gameOver;
@@ -78,9 +85,9 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
     private MediaPlayer gameOverPlayer; // plays game over sound
     private SoundPool soundPool; // plays sound effects
     private SparseIntArray soundMap; // maps IDs to SoundPool
-    private static final int BALL_GOOD_POP_ID = 0;
-    private static final int BALL_BAD_POP_ID = 1;
-    private static final int COLOR_SWITCH_ID = 2;
+    private static final int BALL_GOOD_POP_ID = 0; // sound index for correct tap
+    private static final int BALL_BAD_POP_ID = 1; // sound index for incorrect tap
+    private static final int COLOR_SWITCH_ID = 2; // sound index for color switch
 
     public BallBusterView(Context context, AttributeSet attrs){
         super(context, attrs);
@@ -88,6 +95,7 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
 
         getHolder().addCallback(this);
 
+        // sets up all of the sound effects used in the game
         backgroundPlayer = MediaPlayer.create(context, R.raw.background);
         backgroundPlayer.setLooping(true);
         alertPlayer = MediaPlayer.create(context, R.raw.siren);
@@ -98,6 +106,7 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
         soundMap.put(BALL_BAD_POP_ID, soundPool.load(context, R.raw.buzz,1));
         soundMap.put(COLOR_SWITCH_ID, soundPool.load(context, R.raw.sweep,1));
 
+        // creates all paint objects used in drawing game background
         backgroundPaint = new Paint();
         curtainPaint = new Paint();
         colorIndicatorBackPaint = new Paint();
@@ -110,6 +119,7 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
         super.onSizeChanged(w, h, oldw, oldh);
         screenWidth = w;
         screenHeight = h;
+        // sets up ball parameters based upon devices screen height and width
         startingY = (screenHeight - (screenHeight/5)) + screenWidth/10;
         startingSpeed = 4.0;
         int lowerBound = screenHeight - (screenHeight/5) + (screenWidth/10) + (int)startingSpeed;
@@ -154,8 +164,9 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
             ballTwo.randomizePaint();
             ballThree.randomizePaint();
 
-            textPaint.setColor(Color.BLACK);
+            textPaint.setColor(Color.BLACK); // resets text color from red to black
 
+            // restarts game thread
             ballBusterThread = new BallBusterThread(getHolder());
             ballBusterThread.setRunning(true);
             ballBusterThread.start();
@@ -169,11 +180,12 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
         ballOne.moveBall();
         ballTwo.moveBall();
         ballThree.moveBall();
-
+        // increases the balls speed based upon how much time has passed
         ballOne.increaseSpeed(interval);
         ballTwo.increaseSpeed(interval);
         ballThree.increaseSpeed(interval);
 
+        // determines if the color indicator (the color of balls your are suppose to tap) switches
         int randNum = r.nextInt(500);
         if(randNum == 10){
             int temp = colorIndicatorPaint.getColor();
@@ -186,17 +198,19 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
         // updates text on screen with timeLeft
         timeLeft = 60 - interval;
 
+        // starts the siren alert noting that there is only 5 seconds left
         if(!alertPlayer.isPlaying() && timeLeft <= 5.0){
             textPaint.setColor(Color.RED);
             alertPlayer.start();
         }
+        // checks if the game is over
         if(timeLeft <= 0.0){
             timeLeft = 0.0;
-            gameOverPlayer.start();
+            gameOverPlayer.start(); // plays the game over sound
             gameOver = true; // the game is over
-            ballBusterThread.setRunning(false);
-            backgroundPlayer.stop();
-            showGameOverDialog(R.string.over);
+            ballBusterThread.setRunning(false); // stops the thread
+            backgroundPlayer.stop(); // stops the background music playing
+            showGameOverDialog(R.string.over); // calls dialog method to prompt user
         }
     }
 
@@ -213,6 +227,7 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
         return paint;
     }
 
+    // draws game elements
     public void drawGameBackground(Canvas canvas){
         // reset canvas
         canvas.drawRect(0, 0, screenWidth, screenHeight, backgroundPaint);
@@ -238,7 +253,11 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
         canvas.drawRect(0, screenHeight - (screenHeight/5), screenWidth, screenHeight, curtainPaint);
     }
 
+    // checks to see if the user's touch on screen is within one of the three balls
+    // plays sound according to if the tap was correct or incorrect, updates player score based on
+    // tap and then reset the ball's position when tapped.
     public void checkBallTap(MotionEvent e){
+        // checks if the user's touch is within the first ball object
         if(((ballOne.getX() - ballOne.getRadius()) < e.getX() && e.getX() < (ballOne.getX() + ballOne.getRadius())) && ((ballOne.getY() - ballOne.getRadius()) < e.getY() && e.getY() < (ballOne.getY() + ballOne.getRadius()))){
             if (ballOne.getBallPaint().getColor() == colorIndicatorPaint.getColor()){
                 playerScore += 1;
@@ -249,6 +268,7 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
                 soundPool.play(soundMap.get(BALL_BAD_POP_ID), 1, 1, 1, 0, 1f);
                 resetBalls(1);
             }
+        // checks if the user's touch is within the second ball object
         }else if(((ballTwo.getX() - ballTwo.getRadius()) < e.getX() && e.getX() < (ballTwo.getX() + ballTwo.getRadius())) && ((ballTwo.getY() - ballTwo.getRadius()) < e.getY() && e.getY() < (ballTwo.getY() + ballTwo.getRadius()))){
             if (ballTwo.getBallPaint().getColor() == colorIndicatorPaint.getColor()){
                 playerScore += 1;
@@ -259,6 +279,7 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
                 soundPool.play(soundMap.get(BALL_BAD_POP_ID), 1, 1, 1, 0, 1f);
                 resetBalls(2);
             }
+        // checks if the user's touch is within the third ball object
         }else if(((ballThree.getX() - ballThree.getRadius()) < e.getX() && e.getX() < (ballThree.getX() + ballThree.getRadius())) && ((ballThree.getY() - ballThree.getRadius()) < e.getY() && e.getY() < (ballThree.getY() + ballThree.getRadius()))){
             if (ballThree.getBallPaint().getColor() == colorIndicatorPaint.getColor()){
                 playerScore += 1;
@@ -272,6 +293,8 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
         }
     }
 
+    // reset's the ball by randomizing a new paint for the ball and setting the y variable back to
+    // the original position (behind the curtain)
     public void resetBalls(int ballNum){
         ballBusterThread.setRunning(false);
         if(ballNum == 1){
@@ -287,6 +310,7 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
         ballBusterThread.setRunning(true);
     }
 
+    // prompts the user if he/she wants to restart the game
     public void showGameOverDialog(final int messageId){
         final DialogFragment gameResult = new DialogFragment(){
             @Override
@@ -297,6 +321,13 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
 
                 // display total number of bulls busted
                 builder.setMessage(getResources().getString(R.string.results_format, playerScore));
+               /* builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener(){
+                    public void onClick(DialogInterface dialog, int which){
+                        dialogIsDisplayed = false;
+                        System.exit(0);
+                    }
+                });*/
+
                 builder.setPositiveButton(R.string.reset_game, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -307,6 +338,7 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
                         newGame();
                     }
                 });
+
 
                 return builder.create(); // return the AlertDialog
             }
@@ -330,6 +362,7 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
         // get int representing the type of action which caused this event
         int action = e.getAction();
 
+        // calls checkBallTap method to see if the user's touch matches a balls position
         if (action == MotionEvent.ACTION_DOWN){
             checkBallTap(e);
         }

@@ -5,13 +5,16 @@
     android:background="@mipmap/screen_shot">
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Welcome To Ball Buster"
         android:id="@+id/weclomeTitle"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="100dp" />
+        android:layout_marginTop="100dp"
+        android:gravity="center"
+        android:textStyle="normal"
+        android:textColor="@color/material_blue_grey_800" />
 
     <Button
         android:layout_width="wrap_content"
@@ -20,13 +23,20 @@
         android:id="@+id/startButton"
         android:layout_gravity="center_horizontal"
         android:paddingTop="@dimen/button_padding_top"
-        android:layout_marginTop="50dp" />
+        android:layout_marginTop="50dp"
+        android:textColor="#cecece"
+        android:layout_marginBottom="10dp"
+        android:background="#ff7b7b7b"
+        android:textStyle="bold" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Game Info"
         android:id="@+id/infoButton"
-        android:layout_gravity="center_horizontal" />
+        android:layout_gravity="center_horizontal"
+        android:textColor="#cecece"
+        android:background="#ff7b7b7b"
+        android:textStyle="bold" />
 
 </LinearLayout>
