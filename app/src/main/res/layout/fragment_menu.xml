@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@mipmap/screen_shot"
-    android:id="@+id/linearLayout">
+    android:id="@+id/linearLayout"
+    android:orientation="vertical">
     android:background="@mipmap/screen_shot"
     android:id="@+id/linearLayout">
 
@@ -48,6 +49,8 @@
         android:text="Back"
         android:id="@+id/backButton"
         android:layout_gravity="center_horizontal"
-        android:visibility="invisible" />
+        android:visibility="invisible"
+        android:textColor="#cecece"
+        android:background="#ff7b7b7b" />
 
 </LinearLayout>

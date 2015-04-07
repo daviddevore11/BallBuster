@@ -50,7 +50,7 @@ import java.util.Random;
 public class BallBusterView extends SurfaceView implements SurfaceHolder.Callback{
 
     private BallBusterThread ballBusterThread; // controls the game loop
-    private Activity activity; // to display Game Over dialog in GUI thread
+    private Activity activity; // used to store a reference to main activity
     private boolean dialogIsDisplayed = false; // used to make sure game does not advanced if
                                                // there is dialog up
 
@@ -323,6 +323,7 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
                 // display total number of bulls busted
                 builder.setMessage(getResources().getString(R.string.results_format, playerScore));
 
+                // reset's the game to begin again
                 builder.setPositiveButton(R.string.reset_game, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -334,7 +335,8 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
                     }
                 });
 
-               builder.setNegativeButton("Quit", new DialogInterface.OnClickListener(){
+                // quit's the app completely
+                builder.setNegativeButton("Quit", new DialogInterface.OnClickListener(){
                     public void onClick(DialogInterface dialog, int which){
                         dialogIsDisplayed = false;
                         activity.finish();
