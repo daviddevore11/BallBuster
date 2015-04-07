@@ -199,7 +199,7 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
         timeLeft = 60 - interval;
 
         // starts the siren alert noting that there is only 5 seconds left
-        if(!alertPlayer.isPlaying() && timeLeft <= 5.0){
+        if(timeLeft <= 5.0 && !alertPlayer.isPlaying()){
             textPaint.setColor(Color.RED);
             alertPlayer.start();
         }
@@ -255,10 +255,11 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
 
     // checks to see if the user's touch on screen is within one of the three balls
     // plays sound according to if the tap was correct or incorrect, updates player score based on
-    // tap and then reset the ball's position when tapped.
+    // tap and then reset the ball's position when tapped.  *UPDATE: Added a speed buffer to each
+    // play to help with complaints about hit boxes not working on balls.
     public void checkBallTap(MotionEvent e){
         // checks if the user's touch is within the first ball object
-        if(((ballOne.getX() - ballOne.getRadius()) < e.getX() && e.getX() < (ballOne.getX() + ballOne.getRadius())) && ((ballOne.getY() - ballOne.getRadius()) < e.getY() && e.getY() < (ballOne.getY() + ballOne.getRadius()))){
+        if(((ballOne.getX() - ballOne.getRadius()) < e.getX() && e.getX() < (ballOne.getX() + ballOne.getRadius())) && ((ballOne.getY() - ballOne.getRadius() - ballOne.getSpeed()) < e.getY() && e.getY() < (ballOne.getY() + ballOne.getRadius() + ballOne.getSpeed()))){
             if (ballOne.getBallPaint().getColor() == colorIndicatorPaint.getColor()){
                 playerScore += 1;
                 resetBalls(1);
@@ -269,7 +270,7 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
                 resetBalls(1);
             }
         // checks if the user's touch is within the second ball object
-        }else if(((ballTwo.getX() - ballTwo.getRadius()) < e.getX() && e.getX() < (ballTwo.getX() + ballTwo.getRadius())) && ((ballTwo.getY() - ballTwo.getRadius()) < e.getY() && e.getY() < (ballTwo.getY() + ballTwo.getRadius()))){
+        }else if(((ballTwo.getX() - ballTwo.getRadius()) < e.getX() && e.getX() < (ballTwo.getX() + ballTwo.getRadius())) && ((ballTwo.getY() - ballTwo.getRadius() - ballTwo.getSpeed()) < e.getY() && e.getY() < (ballTwo.getY() + ballTwo.getRadius() + ballTwo.getSpeed()))){
             if (ballTwo.getBallPaint().getColor() == colorIndicatorPaint.getColor()){
                 playerScore += 1;
                 resetBalls(2);
@@ -280,7 +281,7 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
                 resetBalls(2);
             }
         // checks if the user's touch is within the third ball object
-        }else if(((ballThree.getX() - ballThree.getRadius()) < e.getX() && e.getX() < (ballThree.getX() + ballThree.getRadius())) && ((ballThree.getY() - ballThree.getRadius()) < e.getY() && e.getY() < (ballThree.getY() + ballThree.getRadius()))){
+        }else if(((ballThree.getX() - ballThree.getRadius()) < e.getX() && e.getX() < (ballThree.getX() + ballThree.getRadius())) && ((ballThree.getY() - ballThree.getRadius() - ballThree.getSpeed()) < e.getY() && e.getY() < (ballThree.getY() + ballThree.getRadius() + ballThree.getSpeed()))){
             if (ballThree.getBallPaint().getColor() == colorIndicatorPaint.getColor()){
                 playerScore += 1;
                 resetBalls(3);
@@ -321,12 +322,6 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
 
                 // display total number of bulls busted
                 builder.setMessage(getResources().getString(R.string.results_format, playerScore));
-               /* builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener(){
-                    public void onClick(DialogInterface dialog, int which){
-                        dialogIsDisplayed = false;
-                        System.exit(0);
-                    }
-                });*/
 
                 builder.setPositiveButton(R.string.reset_game, new DialogInterface.OnClickListener() {
                     @Override
@@ -339,6 +334,12 @@ public class BallBusterView extends SurfaceView implements SurfaceHolder.Callbac
                     }
                 });
 
+               builder.setNegativeButton("Quit", new DialogInterface.OnClickListener(){
+                    public void onClick(DialogInterface dialog, int which){
+                        dialogIsDisplayed = false;
+                        activity.finish();
+                    }
+                });
 
                 return builder.create(); // return the AlertDialog
             }

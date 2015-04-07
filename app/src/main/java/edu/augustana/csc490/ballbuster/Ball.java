@@ -87,12 +87,16 @@ public class Ball {
         return ballPaint;
     }
 
+    public double getSpeed(){
+        return ballVelocity;
+    }
+
     public void resetSpeed(double speed){
         ballVelocity = speed;
     }
 
     public void resetIncrementTracker(){
-        previousIncrement = 10;
+        previousIncrement = 0;
     }
 
     public void increaseSpeed(double increment){
@@ -100,5 +104,6 @@ public class Ball {
         tempIncrement = tempIncrement/6;
         ballVelocity += tempIncrement;
         previousIncrement = increment;
+        Log.d("SPEED", "Current Speed: " + ballVelocity);
     }
 }
