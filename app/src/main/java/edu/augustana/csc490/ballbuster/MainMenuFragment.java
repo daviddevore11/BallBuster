@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 public class MainMenuFragment extends Fragment {
 
@@ -23,24 +22,29 @@ public class MainMenuFragment extends Fragment {
         super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.fragment_menu, container, false);
 
+        // creates a reference to all of the objects within the view
         linearLayout = (LinearLayout) view.findViewById(R.id.linearLayout);
         title = (ImageView) view.findViewById(R.id.gameTitle);
         startButton = (Button) view.findViewById(R.id.startButton);
         howToButton = (Button) view.findViewById(R.id.infoButton);
         backButton = (Button) view.findViewById(R.id.backButton);
+        // calls the method to add OnClickListeners to all of the button
         addListenerOnButton();
 
         return view;
     }
 
+    // sets onClickListeners for each button
     public void addListenerOnButton(){
+        // startButton will begin game
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 getActivity().setContentView(R.layout.activity_main);
             }
         });
-
+        // howToButton will cause other buttons to disappear, the back button will appear and the
+        // background image of the layout will switch to a how to play image
         howToButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
@@ -51,7 +55,8 @@ public class MainMenuFragment extends Fragment {
                 linearLayout.setBackgroundResource(R.mipmap.how_to);
             }
         });
-
+        // backButton will cause all of the objects that where previously invisible to become
+        // visible again and will change the background image back to the normal background
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

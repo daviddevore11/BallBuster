@@ -47,6 +47,8 @@ import java.util.Random;
     Original Name: j1game_over_mono Created By: jivatma07
  */
 
+ // ALL IMAGES USED WHERE CREATED BY ME OR BUILT IN GRAPHICS FROM ANDROID STUDIO
+
 public class BallBusterView extends SurfaceView implements SurfaceHolder.Callback{
 
     private BallBusterThread ballBusterThread; // controls the game loop

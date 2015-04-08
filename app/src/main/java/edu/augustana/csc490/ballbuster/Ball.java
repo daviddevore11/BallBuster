@@ -3,7 +3,6 @@ package edu.augustana.csc490.ballbuster;
 
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.util.Log;
 
 import java.util.Random;
 
@@ -22,6 +21,7 @@ public class Ball {
     private Random r = new Random();
 
     public Ball(int x, int y, int radius, double velocity, int upper, int lower){
+        // creates the actual properties for each ball
         upwardMovement = true;
         ballX = x;
         ballY = y;
@@ -34,14 +34,17 @@ public class Ball {
         this.randomizePaint();
     }
 
+    // method to return the radius of ball object
     public int getRadius(){
         return ballRadius;
     }
 
+    // method to return ball's current x position
     public int getX(){
         return ballX;
     }
 
+    // method that moves the ball in the correct y direction
     public void moveBall(){
         if(upwardMovement){
             ballY -= ballVelocity;
@@ -51,6 +54,8 @@ public class Ball {
         checkBallPosition();
     }
 
+    // method will determine if the ball is too move up or down.  If the ball has reached the
+    // lower bound then the method will randomize the ball's paint and height
     public void checkBallPosition(){
         if (ballY <= height){
             upwardMovement = false;
@@ -61,14 +66,17 @@ public class Ball {
         }
     }
 
+    // method will set the y position based upon user input
     public void setY(int y){
         ballY = y;
     }
 
+    // method will return the ball's current y position
     public int getY(){
         return ballY;
     }
 
+    // method will randomize the paint of the current ball
     public void randomizePaint(){
         int randNum = r.nextInt(3);
 
@@ -83,27 +91,35 @@ public class Ball {
         }
     }
 
+    // method returns the ball's current paint
     public Paint getBallPaint(){
         return ballPaint;
     }
 
+    // method returns the ball's current speed
     public double getSpeed(){
         return ballVelocity;
     }
 
+    // method will reset the ball's speed, used when resetting the game
     public void resetSpeed(double speed){
         ballVelocity = speed;
     }
 
+    // method will reset the previousIncrement variable which is used for increasing the speed of
+    // the ball.  Used when resetting the game
     public void resetIncrementTracker(){
         previousIncrement = 0;
     }
 
+    // method will slowly increase the ball's traveling speed.  The amount that the speed is
+    // increased by is the difference between the current time and the previous time.  All of that
+    // is divided by 6 which creates an increase that over 60 secs (the game length) fairly increase
+    // the balls speed.
     public void increaseSpeed(double increment){
         double tempIncrement = (increment-previousIncrement);
         tempIncrement = tempIncrement/6;
         ballVelocity += tempIncrement;
         previousIncrement = increment;
-        Log.d("SPEED", "Current Speed: " + ballVelocity);
     }
 }
