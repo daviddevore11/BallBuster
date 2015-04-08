@@ -6,18 +6,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-/**
- * Created by Owner on 4/7/2015.
- */
 public class MainMenuFragment extends Fragment {
 
     private Button startButton;
     private Button howToButton;
     private Button backButton;
-    private TextView title;
+    private ImageView title;
     private LinearLayout linearLayout;
 
     @Override
@@ -26,7 +24,7 @@ public class MainMenuFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_menu, container, false);
 
         linearLayout = (LinearLayout) view.findViewById(R.id.linearLayout);
-        title = (TextView) view.findViewById(R.id.weclomeTitle);
+        title = (ImageView) view.findViewById(R.id.gameTitle);
         startButton = (Button) view.findViewById(R.id.startButton);
         howToButton = (Button) view.findViewById(R.id.infoButton);
         backButton = (Button) view.findViewById(R.id.backButton);

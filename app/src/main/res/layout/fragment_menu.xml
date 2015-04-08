@@ -4,21 +4,19 @@
     android:layout_height="match_parent"
     android:background="@mipmap/screen_shot"
     android:id="@+id/linearLayout"
-    android:orientation="vertical">
+    android:orientation="vertical"><![CDATA[
     android:background="@mipmap/screen_shot"
     android:id="@+id/linearLayout">
 
-    <TextView
-        android:layout_width="match_parent"
+    ]]>
+
+    <ImageView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Welcome To Ball Buster"
-        android:id="@+id/weclomeTitle"
+        android:id="@+id/gameTitle"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="100dp"
-        android:gravity="center"
-        android:textStyle="normal"
-        android:textColor="@color/material_blue_grey_800" />
+        android:src="@mipmap/title"
+        android:layout_marginTop="30dp" />
 
     <Button
         android:layout_width="wrap_content"
@@ -36,7 +34,7 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Game Info"
+        android:text="How To Play"
         android:id="@+id/infoButton"
         android:layout_gravity="center_horizontal"
         android:textColor="#cecece"
